@@ -12,7 +12,7 @@ import { useAction } from "@/hooks/use-action"
 import { createList } from "@/actions/create-list"
 import { toast } from "sonner"
 
-function ListForm() {
+export function ListForm() {
     const router = useRouter()
     const params = useParams()
 
@@ -98,5 +98,3 @@ function ListForm() {
         </ListWrapper>
     )
 }
-
-export default ListForm

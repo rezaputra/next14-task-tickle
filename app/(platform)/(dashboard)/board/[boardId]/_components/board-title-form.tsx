@@ -43,11 +43,11 @@ function BoardTitleForm({ data }: BoardTitleFormProps) {
     }
 
     const onSubmitted = (formData: FormData) => {
-        const newTitle = formData.get("title") as string
-        if (title === newTitle) {
+        const title = formData.get("title") as string
+        if (title === data.title) {
             return
         }
-        execute({ title: newTitle, id: data.id })
+        execute({ title, id: data.id })
     }
 
     const onBlurring = () => {
