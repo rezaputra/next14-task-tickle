@@ -45,8 +45,8 @@ model Card {
   order       Int
   description String?
 
-  listId String @db.ObjectId
   list   List   @relation(fields: [listId], references: [id])
+  listId String @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
