@@ -8,6 +8,7 @@ import { createSafeAction } from "@/lib/create-safe-action"
 import { CreateBoard } from "./schema"
 import { createAuditLog } from "@/lib/create-audit-log"
 import { ACTION, ENTITY_TYPE } from "@prisma/client"
+import { hasAvailableCount, incrementAvailableCount } from "@/lib/orgLimit"
 
 const handler = async (data: InputType): Promise<ReturnType> => {
     const { userId, orgId } = auth()
@@ -18,11 +19,15 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         }
     }
 
+    const canCreate = await hasAvailableCount()
+
+    if (!canCreate) {
+        return { error: "You have reached your limit. Please upgrade to create more" }
+    }
+
     const { title, image } = data
 
     const [imageId, imageThumbUrl, imageFullUrl, imageUserName, imageLinkHTML] = image.split("|")
-
-    // console.log({ imageId, imageThumbUrl, imageFullUrl, imageUserName, imageLinkHTML })
 
     if (!imageId || !imageThumbUrl || !imageFullUrl || !imageLinkHTML || !imageUserName) {
         return {
@@ -44,6 +49,8 @@ const handler = async (data: InputType): Promise<ReturnType> => {
                 imageLinkHTML,
             },
         })
+
+        await incrementAvailableCount()
 
         await createAuditLog({
             entityId: board.id,
