@@ -5,8 +5,7 @@ import { InputType, ReturnType } from "./types"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { createSafeAction } from "@/lib/create-safe-action"
-import { DeleteBoard } from "./schema"
-import { redirect } from "next/navigation"
+import { DeleteCard } from "./schema"
 import { createAuditLog } from "@/lib/create-audit-log"
 import { ACTION, ENTITY_TYPE } from "@prisma/client"
 
@@ -17,29 +16,33 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         return { error: "Unauthorized" }
     }
 
-    const { id } = data
-    let board
+    const { id, boardId } = data
+    let card
 
     try {
-        board = await db.board.delete({
+        card = await db.card.delete({
             where: {
                 id,
-                orgId,
+                list: {
+                    board: {
+                        orgId,
+                    },
+                },
             },
         })
 
         await createAuditLog({
-            entityId: board.id,
-            entityType: ENTITY_TYPE.BOARD,
-            entityTitle: board.title,
+            entityId: card.id,
+            entityType: ENTITY_TYPE.CARD,
+            entityTitle: card.title,
             action: ACTION.DELETE,
         })
     } catch (error) {
-        return { error: "Failed to update." }
+        return { error: "Failed to delete." }
     }
 
-    revalidatePath(`/organization/${orgId}`)
-    redirect(`/organization/${orgId}`)
+    revalidatePath(`/board/${boardId}`)
+    return { data: card }
 }
 
-export const deleteBoard = createSafeAction(DeleteBoard, handler)
+export const deleteCard = createSafeAction(DeleteCard, handler)
